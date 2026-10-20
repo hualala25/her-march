@@ -65,35 +65,10 @@
           return;
         }
 
-        async function readSource(path) {
-          const response = await fetch(path, { cache: "no-store" });
-          if (!response.ok) throw new Error(`无法载入 ${path}: ${response.status}`);
-
-          let bytes = new Uint8Array(await response.arrayBuffer());
-          const isGzip = bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
-
-          if (isGzip) {
-            if (!("DecompressionStream" in window)) {
-              throw new Error("浏览器不支持 DecompressionStream");
-            }
-            const stream = new Blob([bytes])
-              .stream()
-              .pipeThrough(new DecompressionStream("gzip"));
-            bytes = new Uint8Array(await new Response(stream).arrayBuffer());
-          }
-
-          return new TextDecoder().decode(bytes);
-        }
-
         try {
-          let html;
-          try {
-            html = await readSource("./page.html.gz");
-          } catch (compressedError) {
-            console.warn("压缩正文载入失败，切换到兼容版本。", compressedError);
-            loadingStatus.textContent = "正在载入兼容版本";
-            html = await readSource("./page.html");
-          }
+          const response = await fetch("./page.html", { cache: "no-store" });
+          if (!response.ok) throw new Error(`无法载入正文: ${response.status}`);
+          const html = await response.text();
 
           document.open();
           document.write(html);
