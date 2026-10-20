@@ -60,6 +60,11 @@
       (async function loadHerMarch() {
         const loadingStatus = document.getElementById("loadingStatus");
 
+        if (window.location.protocol === "file:") {
+          window.location.replace("./page.html");
+          return;
+        }
+
         async function readSource(path) {
           const response = await fetch(path, { cache: "no-store" });
           if (!response.ok) throw new Error(`无法载入 ${path}: ${response.status}`);
